@@ -8,7 +8,7 @@ LoadModule ssl_module modules/mod_ssl.so                    # support SSL (https
 
 Include conf/extra/httpd-vhosts.conf                        # to load Virtual Hosts from httpd-vhosts.conf
 
-#Thêm vào
+#Additional
 AddHandler "proxy:fcgi://php-product:9000" .php             # to run PHP Script via Proxy
 
 docker build -t httpd:version2 --force-rm -f Dockerfile .    # create image from Dockerfile
