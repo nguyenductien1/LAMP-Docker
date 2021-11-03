@@ -1,0 +1,75 @@
+
+ 
+version: "3.3"                        # version 3 docs.docker.com/compose/compose-file/
+
+networks:                             # CREATE NETWORK
+  my-network:
+    driver: bridge
+
+volumes:                              # CREATE VOLUME
+  dir-site:                           
+    driver_opts:
+      device: /home/dtn/Documents/HTTP-Server/sites/ 
+      type: none
+      o: bind
+      
+services:                         
+  apache:                         
+    image: "httpd:dt"      
+    container_name: httpd-dt         
+    restart: always
+    hostname: httpd01
+    networks:
+      - my-network
+    ports:
+      - "80:80"                
+      - "443:443"
+
+    volumes:                      
+      - dir-site:/home/sites/ 
+      - ./configs/httpd/httpd.conf:/usr/local/apache2/conf/httpd.conf
+      - ./configs/httpd/httpd-vhosts.conf:/usr/local/apache2/conf/httpd-vhosts.conf
+    extra_hosts:
+      - "dockerhost:172.20.0.1"   
+      
+  mysql:                      
+    image: "mysql:latest"
+    container_name: mysql-dt
+    restart: always
+    hostname: mysql01
+    networks:
+      - my-network
+    environment:
+      MYSQL_ROOT_PASSWORD: abc123   
+      MYSQL_DATABASES: db_site
+      MYSQL_USER: your_user_name
+      MYSQL_PASSWORD: your_password
+    ports: 
+      - "3333:3306"
+    volumes:
+      - ./sites/db:/var/lib/mysql  
+      - ./configs/db/my.cnf:/etc/mysql/my.cnf
+    cap_add: 
+      - SYS_NICE  
+  php:                         
+    image: "php:dt"
+    container_name: php-dt      
+    hostname: phpdt
+    restart: always
+    networks:
+      - my-network
+    volumes:
+      - dir-site:/home/sites/
+    extra_hosts:
+      - "dockerhost:172.20.0.1"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 50M
+        reservations:
+          cpus: '0.25'
+          memory: 20M
+             
+
+
